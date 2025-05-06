@@ -28,6 +28,7 @@ export const SecureCard = ({
       <div className="security-corner top-right" />
       <div className="security-corner bottom-left" />
       <div className="security-corner bottom-right" />
+      
       {children}
     </div>
   );

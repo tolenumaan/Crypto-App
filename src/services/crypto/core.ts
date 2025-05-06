@@ -7,6 +7,9 @@ export class CryptoService {
       publicKey: `PUB_${this.randomHash(16)}`,
       anagramHash: `HASH_${this.randomHash(8)}`,
       biometricSignature: `BIO_${this.randomHash(24)}`
+
+  static hashData(data: string): string {
+    return `HASH_${this.randomHash(32)}_${data.slice(0, 4)}`;
     };
   }
 

@@ -1,4 +1,4 @@
-'use client';
+PinEntry.tsx'use client';
 
 import { useState } from 'react';
 import { SecureCard } from '../core/SecureCard';

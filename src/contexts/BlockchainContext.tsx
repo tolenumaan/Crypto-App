@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useReducer } from 'react';
+import { createContext, useContext, useReducer, useEffect } from 'react';
 import { Transaction, UserID } from '@/types';
 
 type BlockchainState = {
@@ -10,7 +10,8 @@ type BlockchainState = {
 
 type BlockchainAction = 
   | { type: 'ADD_TRANSACTION'; payload: Transaction }
-  | { type: 'CONFIRM_TRANSACTION'; payload: string };
+  | { type: 'CONFIRM_TRANSACTION'; payload: string }
+  | { type: 'UPDATE_BLOCKCHAIN'; payload: Transaction[] };
 
 const BlockchainContext = createContext<{
   state: BlockchainState;
@@ -32,6 +33,11 @@ function blockchainReducer(state: BlockchainState, action: BlockchainAction): Bl
           state.pendingTransactions.find(tx => tx.id === action.payload)!
         ]
       };
+    case 'UPDATE_BLOCKCHAIN':
+      return {
+        pendingTransactions: [],
+        confirmedTransactions: [...state.confirmedTransactions, ...action.payload]
+      };
     default:
       return state;
   }
@@ -42,6 +48,26 @@ export function BlockchainProvider({ children }: { children: React.ReactNode }) 
     pendingTransactions: [],
     confirmedTransactions: []
   });
+
+  useEffect(() => {
+    const ws = new WebSocket(process.env.NEXT_PUBLIC_WS_URL!);
+    
+    ws.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        dispatch({ 
+          type: 'UPDATE_BLOCKCHAIN',
+          payload: Array.isArray(data) ? data : [data]
+        });
+      } catch (error) {
+        console.error('WebSocket message error:', error);
+      }
+    };
+
+    return () => {
+      ws.close();
+    };
+  }, [dispatch]);
 
   return (
     <BlockchainContext.Provider value={{ state, dispatch }}>
